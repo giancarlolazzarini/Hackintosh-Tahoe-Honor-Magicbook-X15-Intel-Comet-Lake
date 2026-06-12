@@ -1,44 +1,74 @@
 # Hackintosh-Tahoe-Honor-Magicbook-X15-Intel-Comet-Lake
 OpenCore Hackintosh EFI configuration for the Honor MagicBook X15 (Intel Comet Lake). Includes comprehensive documentation on working components and physical hardware limitations (Intel SST, HDMI). Open for community contributions.
 
-# Honor MagicBook X15 - OpenCore Hackintosh
+# Honor MagicBook X15 - OpenCore EFI
 
-This repository contains the OpenCore EFI configuration for the Honor MagicBook X15. It is provided as an open-source starting point for users with similar hardware.
+OpenCore bootloader configuration for the Honor MagicBook X15. This repository provides a stable base for macOS, with necessary ACPI patches and kexts tailored for this specific Comet Lake architecture. 
+
+Please read the hardware limitations section carefully before deploying this EFI.
 
 ## Hardware Specifications
 
-*   **Model:** Honor MagicBook X15
-*   **Processor:** Intel Core (Comet Lake architecture)
-*   **Graphics:** Intel UHD Graphics (iGPU)
-*   **Audio Codec:** Realtek ALC256 (Routed via Intel Smart Sound Technology)
-*   **Trackpad:** I2C Interface
+| Component | Specification |
+| :--- | :--- |
+| **Model** | Honor MagicBook X15 |
+| **CPU** | Intel Core (Comet Lake) |
+| **iGPU** | Intel UHD Graphics |
+| **RAM** | DDR4 (Soldered) |
+| **Storage** | NVMe SSD |
+| **Audio** | Realtek ALC256 (Intel SST Routed) |
+| **Trackpad** | I2C Interface |
 
-## Current Status
+## Component Status
 
-This configuration achieves maximum possible compatibility given the physical constraints of the Honor motherboard.
+### Core System
+| Component | Status | Notes |
+| :--- | :--- | :--- |
+| CPU Power Management | Working | Native Intel SpeedStep/Speed Shift. |
+| iGPU Acceleration | Working | Full QE/CI via WhateverGreen. |
+| Sleep / Wake | Working | |
+| NVRAM | Working | Native read/write support. |
+| Battery Readout | Working | SMCBatteryManager integration. |
 
-### What Works
+### Input / Output
+| Component | Status | Notes |
+| :--- | :--- | :--- |
+| Internal Keyboard | Working | VoodooPS2Controller. |
+| Trackpad (I2C) | Working | Gestures supported via VoodooI2C. |
+| USB Ports | Working | Custom USB map applied. |
+| Wi-Fi & Bluetooth | Working | Managed via AirportItlwm and IntelBluetoothFirmware. |
+| Web Camera | Working | Native USB interface. |
 
-*   **Graphics:** Full QE/CI hardware acceleration for the Intel UHD iGPU.
-*   **Network:** Wi-Fi and Bluetooth functionality (handled via standard Intel kexts).
-*   **Input:** Trackpad with gestures (I2C) and internal keyboard.
-*   **Power Management:** Native CPU power management, Intel SpeedStep/Speed Shift.
-*   **USB Subsystem:** Mapped and functional standard USB ports.
-*   **Sleep/Wake:** System successfully enters and wakes from sleep states.
+### Audio & Video (Known Quirks)
+| Component | Status | Notes |
+| :--- | :--- | :--- |
+| USB / Bluetooth Audio | Working | Seamless output. |
+| Internal Speakers / Mic | Unsupported | Hardware limitation. See section below. |
+| HDMI Port | Unsupported | Routing incompatible with macOS framebuffers. |
+| Type-C Video Output | Unsupported | Port lacks DisplayPort Alt Mode physically. |
 
-### What Doesn't Work (Hardware Limitations)
+## Hardware Limitations (Important)
 
-Due to specific OEM architectural choices, the following components are physically incompatible with macOS native frameworks:
+Due to specific OEM architectural designs, the following components cannot be enabled through OpenCore configuration or ACPI patching.
 
-*   **Internal Audio (Speakers & Microphone):** The Realtek ALC256 codec is completely isolated behind a hardware-level Intel Smart Sound Technology (SST) DSP. macOS `AppleHDA` does not contain the required translation drivers for the `INTELAUDIO\` routing. 
-    *   *Workaround:* Use a USB-C to 3.5mm DAC adapter, Bluetooth audio, or external USB sound cards.
-*   **HDMI Port:** The physical HDMI port cannot be mapped via standard Framebuffer patching due to motherboard routing (likely via unsupported internal converters like LSPCON). Additionally, the single USB-C port is wired strictly for data/power delivery and does not support DisplayPort Alt Mode.
-    *   *Workaround:* To output external video, a USB Type-A adapter utilizing **DisplayLink** technology is strictly required.
+**1. Intel Smart Sound Technology (SST)**
+The internal Realtek ALC256 audio codec is not routed through a standard High Definition Audio (HDA) bus. It is physically routed through an Intel DSP (`INTELAUDIO\FUNC_01`). AppleHDA lacks the proprietary drivers to communicate with this DSP, rendering the internal speakers and combo jack invisible to the OS.
+* *Solution:* Use a Type-C to 3.5mm DAC adapter for wired headsets, or rely on Bluetooth audio.
 
-## Contributing
+**2. Video Output**
+The physical HDMI port is routed through an internal converter that macOS cannot interface with. Furthermore, the single Type-C port on this machine is wired strictly for USB data and Power Delivery, lacking the physical pins for DisplayPort Alt Mode.
+* *Solution:* External monitors must be connected using a USB Type-A adapter featuring **DisplayLink** technology. Standard passive adapters will not work.
 
-This project is open-source. Since specific hardware barriers exist (like the Intel SST audio routing), pull requests, forks, and technical insights from the community are highly encouraged. If you find a workaround or a DSDT patch that resolves the known limitations without causing system instability, please submit a PR.
+## BIOS Configuration
 
-## License
+Before booting, ensure the following settings are applied in the BIOS:
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+* **Secure Boot:** Disabled
+* **Fast Boot:** Disabled
+* **SATA Mode:** AHCI (if applicable)
+* **TPM:** Disabled (Recommended for macOS installation)
+
+## Credits
+
+* [Acidanthera](https://github.com/acidanthera) for OpenCore and core Kexts.
+* [Dortania](https://dortania.github.io/OpenCore-Install-Guide/) for the OpenCore Install Guide.
