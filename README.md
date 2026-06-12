@@ -43,7 +43,6 @@ The physical HDMI port is routed through an internal converter that macOS cannot
 
 * **Secure Boot:** Disabled
 * **Fast Boot:** Disabled
-* **SATA Mode:** AHCI
 * **TPM:** Disabled
 
 ## Credits
