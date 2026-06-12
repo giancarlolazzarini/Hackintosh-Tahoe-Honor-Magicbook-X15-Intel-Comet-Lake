@@ -1,9 +1,6 @@
-# Hackintosh-Tahoe-Honor-Magicbook-X15-Intel-Comet-Lake
-OpenCore Hackintosh EFI configuration for the Honor MagicBook X15 (Intel Comet Lake). Includes comprehensive documentation on working components and physical hardware limitations (Intel SST, HDMI). Open for community contributions.
-
 # Honor MagicBook X15 - OpenCore EFI
 
-OpenCore bootloader configuration for the Honor MagicBook X15. This repository provides a stable base for macOS, with necessary ACPI patches and kexts tailored for this specific Comet Lake architecture. 
+OpenCore bootloader configuration for the Honor MagicBook X15. This repository provides a base for macOS, tailored for this specific Comet Lake architecture. 
 
 Please read the hardware limitations section carefully before deploying this EFI.
 
@@ -21,52 +18,33 @@ Please read the hardware limitations section carefully before deploying this EFI
 
 ## Component Status
 
-### Core System
-| Component | Status | Notes |
-| :--- | :--- | :--- |
-| CPU Power Management | Working | Native Intel SpeedStep/Speed Shift. |
-| iGPU Acceleration | Working | Full QE/CI via WhateverGreen. |
-| Sleep / Wake | Working | |
-| NVRAM | Working | Native read/write support. |
-| Battery Readout | Working | SMCBatteryManager integration. |
+| Component | Yes | WIP | No | Notes |
+| :--- | :---: | :---: | :---: | :--- |
+| iGPU Acceleration | ✓ | | | Full QE/CI via WhateverGreen. |
+| Wi-Fi & Bluetooth | ✓ | | | Managed via AirportItlwm and IntelBluetoothFirmware. |
+| Trackpad (I2C) & Keyboard | ✓ | | | Gestures supported; VoodooPS2Controller integration. |
+| USB Ports & Web Camera | ✓ | | | Custom USB map applied; Native camera interface. |
+| Sleep/Wake & NVRAM | ✓ | | | Native power states and read/write support. |
+| CPU Power Management | | ✓ | | Configuration currently in progress. |
+| Internal Audio (ALC256) | | | ✓ | Hardware limitation (Intel SST routed). |
+| HDMI Port | | | ✓ | Routing incompatible with macOS framebuffers. |
 
-### Input / Output
-| Component | Status | Notes |
-| :--- | :--- | :--- |
-| Internal Keyboard | Working | VoodooPS2Controller. |
-| Trackpad (I2C) | Working | Gestures supported via VoodooI2C. |
-| USB Ports | Working | Custom USB map applied. |
-| Wi-Fi & Bluetooth | Working | Managed via AirportItlwm and IntelBluetoothFirmware. |
-| Web Camera | Working | Native USB interface. |
-
-### Audio & Video (Known Quirks)
-| Component | Status | Notes |
-| :--- | :--- | :--- |
-| USB / Bluetooth Audio | Working | Seamless output. |
-| Internal Speakers / Mic | Unsupported | Hardware limitation. See section below. |
-| HDMI Port | Unsupported | Routing incompatible with macOS framebuffers. |
-| Type-C Video Output | Unsupported | Port lacks DisplayPort Alt Mode physically. |
-
-## Hardware Limitations (Important)
-
-Due to specific OEM architectural designs, the following components cannot be enabled through OpenCore configuration or ACPI patching.
+## Hardware Limitations
 
 **1. Intel Smart Sound Technology (SST)**
-The internal Realtek ALC256 audio codec is not routed through a standard High Definition Audio (HDA) bus. It is physically routed through an Intel DSP (`INTELAUDIO\FUNC_01`). AppleHDA lacks the proprietary drivers to communicate with this DSP, rendering the internal speakers and combo jack invisible to the OS.
-* *Solution:* Use a Type-C to 3.5mm DAC adapter for wired headsets, or rely on Bluetooth audio.
+The internal Realtek ALC256 audio codec is routed through an Intel DSP (`INTELAUDIO\FUNC_01`). AppleHDA lacks the proprietary drivers to communicate with this DSP.
+* *Workaround:* Use a Type-C to 3.5mm DAC adapter for wired headsets, or rely on Bluetooth audio.
 
 **2. Video Output**
-The physical HDMI port is routed through an internal converter that macOS cannot interface with. Furthermore, the single Type-C port on this machine is wired strictly for USB data and Power Delivery, lacking the physical pins for DisplayPort Alt Mode.
-* *Solution:* External monitors must be connected using a USB Type-A adapter featuring **DisplayLink** technology. Standard passive adapters will not work.
+The physical HDMI port is routed through an internal converter that macOS cannot interface with. The single Type-C port is wired strictly for USB data and Power Delivery.
+* *Workaround:* External monitors must be connected using a USB Type-A adapter featuring DisplayLink technology.
 
 ## BIOS Configuration
 
-Before booting, ensure the following settings are applied in the BIOS:
-
 * **Secure Boot:** Disabled
 * **Fast Boot:** Disabled
-* **SATA Mode:** AHCI (if applicable)
-* **TPM:** Disabled (Recommended for macOS installation)
+* **SATA Mode:** AHCI
+* **TPM:** Disabled
 
 ## Credits
 
